@@ -17,6 +17,8 @@ public class PDownConfigInfo implements Serializable {
   private List<String> extFileServers;
   //检测更新频率 0.从不 1.一周检查一次 2.每次打开检查
   private int updateCheckRate = 2;
+  //启动时是否自动打开窗口
+  private boolean autoOpen = true;
   //最后一次检查更新时间
   private long lastUpdateCheck;
   //前置代理
@@ -85,12 +87,21 @@ public class PDownConfigInfo implements Serializable {
     return this;
   }
 
-  public static com.github.zhoujinshi.proxy.proxy.ProxyConfig convert(ProxyConfig proxyConfig) {
+  public boolean isAutoOpen() {
+    return autoOpen;
+  }
+
+  public PDownConfigInfo setAutoOpen(boolean autoOpen) {
+    this.autoOpen = autoOpen;
+    return this;
+  }
+
+  public static com.github.monkeywie.proxyee.proxy.ProxyConfig convert(ProxyConfig proxyConfig) {
     if (proxyConfig == null) {
       return null;
     }
-    return new com.github.zhoujinshi.proxy.proxy.ProxyConfig(
-        com.github.zhoujinshi.proxy.proxy.ProxyType.valueOf(proxyConfig.getProxyType().name()),
+    return new com.github.monkeywie.proxyee.proxy.ProxyConfig(
+        com.github.monkeywie.proxyee.proxy.ProxyType.valueOf(proxyConfig.getProxyType().name()),
         proxyConfig.getHost(),
         proxyConfig.getPort(),
         proxyConfig.getUser(),

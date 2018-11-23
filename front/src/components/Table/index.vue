@@ -32,33 +32,37 @@
                 @on-change="toggleAll"></Checkbox>
             </div>
             <div class="td">{{ task.response.fileName }}</div>
-            <div class="td">{{ task.response.totalSize?$numeral(task.response.totalSize).format('0.00b'):$t('tasks.unknowLeft') }}</div>
+            <div class="td">{{ task.response.totalSize?$numeral(task.response.totalSize).format('0.00 ib'):$t('tasks.unknowLeft') }}</div>
             <div class="td">{{ calcProgress(task) }}</div>
-            <div class="td">{{ $numeral(task.info.speed).format('0.00b') }}/S</div>
+            <div class="td">{{ $numeral(task.info.speed).format('0.00 ib') }}/S</div>
             <div class="td">{{ calcStatus(task) }}</div>
             <div class="td">
               <Icon v-if="task.info.status === 1"
                 class="action-icon"
                 type="ios-pause"
+                :title="$t('tasks.pauseDownloads')"
                 @click="$emit('on-pause', task)"></Icon>
               <Icon v-else-if="task.info.status !== 4"
                 class="action-icon"
                 type="ios-play"
+                :title="$t('tasks.continueDownloading')"
                 @click="$emit('on-resume', task)"></Icon>
               <Icon type="ios-trash"
                 class="action-icon"
+                :title="$t('tasks.deleteTask')"
                 @click="$emit('on-delete', task)"></Icon>
               <Icon class="action-icon"
                 type="ios-folder"
+                :title="$t('tasks.revealInFolder')"
                 @click="$emit('on-open', task)"></Icon>
               <Poptip placement="right-end"
                 :title="$t('tasks.detail')"
                 transfer
                 width="400"
                 trigger="click">
-                <Icon type="ios-eye-outline"
-                  style="padding-left: 0.625rem;padding-top: 0.1rem;"
-                  class="action-icon"></Icon>
+                <Icon class="action-icon"
+                  :title="$t('tasks.detail')"
+                  type="ios-eye-outline"></Icon>
                 <div class="file-detail"
                   slot="content">
                   <p>
@@ -75,7 +79,7 @@
                   </p>
                   <p>
                     <b>{{ $t('tasks.fileSize') }}：</b>
-                    <span>{{ $numeral(task.response.totalSize).format('0.00b') }}</span>
+                    <span>{{ $numeral(task.response.totalSize).format('0.00 ib') }}</span>
                   </p>
                   <p>
                     <b>{{ $t('tasks.connections') }}：</b>
@@ -83,7 +87,7 @@
                   </p>
                   <p>
                     <b>{{ $t('tasks.downloadSpeed') }}：</b>
-                    <span>{{ $numeral(task.info.speed).format('0.00b') }}/S</span>
+                    <span>{{ $numeral(task.info.speed).format('0.00 ib') }}/S</span>
                   </p>
                   <p>
                     <b>{{ $t('tasks.status') }}：</b>
@@ -236,7 +240,10 @@ export default {
 
           &:nth-child(1) {
             width: 5%;
-            text-indent: 0.5em;
+
+            > label {
+              margin: 0 auto;
+            }
           }
           &:nth-child(2) {
             width: 30%;
@@ -264,11 +271,24 @@ export default {
         }
       }
 
+      .tds {
+        > .td:last-child {
+          .action-icon {
+            padding: 3px 5px;
+            margin-right: 5px;
+
+            &:last-child {
+              margin-right: 0;
+            }
+          }
+        }
+      }
+
       .progress {
         position: absolute;
         z-index: -1;
         height: 100%;
-        background: rgba(40, 130, 214, 0.1);
+        background: rgba(87, 197, 247, 0.2);
         transition: all 0.6s;
       }
     }

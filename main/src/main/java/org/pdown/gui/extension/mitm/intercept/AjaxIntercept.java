@@ -1,11 +1,11 @@
 package org.pdown.gui.extension.mitm.intercept;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.zhoujinshi.proxy.intercept.HttpProxyIntercept;
-import com.github.zhoujinshi.proxy.intercept.HttpProxyInterceptPipeline;
-import com.github.zhoujinshi.proxy.intercept.common.FullResponseIntercept;
-import com.github.zhoujinshi.proxy.util.ByteUtil;
-import com.github.zhoujinshi.proxy.util.HttpUtil;
+import com.github.monkeywie.proxyee.intercept.HttpProxyIntercept;
+import com.github.monkeywie.proxyee.intercept.HttpProxyInterceptPipeline;
+import com.github.monkeywie.proxyee.intercept.common.FullResponseIntercept;
+import com.github.monkeywie.proxyee.util.ByteUtil;
+import com.github.monkeywie.proxyee.util.HttpUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpResponse;

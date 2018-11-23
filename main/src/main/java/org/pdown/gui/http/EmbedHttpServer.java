@@ -83,8 +83,8 @@ public class EmbedHttpServer {
   }
 
   public void start(GenericFutureListener startedListener) {
-    NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    NioEventLoopGroup workGroup = new NioEventLoopGroup(1);
+    NioEventLoopGroup bossGroup = new NioEventLoopGroup(2);
+    NioEventLoopGroup workGroup = new NioEventLoopGroup(2);
     try {
       ServerBootstrap bootstrap = new ServerBootstrap().group(bossGroup, workGroup)
           .channel(NioServerSocketChannel.class)

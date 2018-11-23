@@ -1,6 +1,6 @@
 package org.pdown.gui.extension.mitm.util;
 
-import com.github.zhoujinshi.proxy.crt.CertUtil;
+import com.github.monkeywie.proxyee.crt.CertUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -152,7 +152,7 @@ public class ExtensionCertUtil {
   }
 
   public static void main(String[] args) throws Exception {
-    String subjectName = "proxyDown CA";
+    String subjectName = "ProxyeeDown CA";
     String path = "f:/test/";
     File certFile = new File(path + "ca.crt");
     //证书还未安装

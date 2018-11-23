@@ -1,10 +1,10 @@
 package org.pdown.gui.extension.mitm.server;
 
-import com.github.zhoujinshi.proxy.exception.HttpProxyExceptionHandle;
-import com.github.zhoujinshi.proxy.intercept.HttpProxyInterceptInitializer;
-import com.github.zhoujinshi.proxy.intercept.HttpProxyInterceptPipeline;
-import com.github.zhoujinshi.proxy.server.HttpProxyServer;
-import com.github.zhoujinshi.proxy.server.HttpProxyServerConfig;
+import com.github.monkeywie.proxyee.exception.HttpProxyExceptionHandle;
+import com.github.monkeywie.proxyee.intercept.HttpProxyInterceptInitializer;
+import com.github.monkeywie.proxyee.intercept.HttpProxyInterceptPipeline;
+import com.github.monkeywie.proxyee.server.HttpProxyServer;
+import com.github.monkeywie.proxyee.server.HttpProxyServerConfig;
 import io.netty.channel.Channel;
 import org.pdown.gui.content.PDownConfigContent;
 import org.pdown.gui.entity.PDownConfigInfo;

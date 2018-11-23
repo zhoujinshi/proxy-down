@@ -8,36 +8,36 @@ const clientNoSpin = axios.create()
  * 弹出原生文件选择框
  */
 export const showFileChooser = () => {
-    return new Promise((resolve, reject) => {
-        client
-            .get('/native/fileChooser')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .get('/native/fileChooser')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 弹出原生文件夹选择框
  */
 export const showDirChooser = () => {
-    return new Promise((resolve, reject) => {
-        client
-            .get('/native/dirChooser')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .get('/native/dirChooser')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 取应用初始化配置信息
  */
 export const getInitConfig = () => {
-    return new Promise((resolve, reject) => {
-        client
-            .get('/native/getInitConfig')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .get('/native/getInitConfig')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -45,48 +45,48 @@ export const getInitConfig = () => {
  * @param {string} path 文件路径
  */
 export const showFile = path => {
-    return new Promise((resolve, reject) => {
-        client
-            .post('/native/showFile', {path: path})
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .post('/native/showFile', { path: path })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 检查证书是否安装
  */
 export const checkCert = () => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .get('/native/checkCert')
-            .then(response => resolve(response.data.status))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .get('/native/checkCert')
+      .then(response => resolve(response.data.status))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 安装证书
  */
 export const installCert = () => {
-    return new Promise((resolve, reject) => {
-        client
-            .get('/native/installCert')
-            .then(response => resolve(response.data.status))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .get('/native/installCert')
+      .then(response => resolve(response.data.status))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 取设置的代理模式
  */
 export const getProxyMode = () => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .get('/native/getProxyMode')
-            .then(response => resolve(response.data.mode))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .get('/native/getProxyMode')
+      .then(response => resolve(response.data.mode))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -94,24 +94,24 @@ export const getProxyMode = () => {
  * @param {number} mode 0.不接管系统代理 1.接管系统代理
  */
 export const changeProxyMode = mode => {
-    return new Promise((resolve, reject) => {
-        client
-            .post('/native/changeProxyMode', {mode: mode})
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .post('/native/changeProxyMode', { mode: mode })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 取本地已安装的扩展列表
  */
 export const getExtensions = () => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .get('/native/getExtensions')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .get('/native/getExtensions')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -119,12 +119,12 @@ export const getExtensions = () => {
  * @param {object} data 扩展相关信息
  */
 export const installExtension = data => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .post('/native/installExtension', data)
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .post('/native/installExtension', data)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -132,12 +132,12 @@ export const installExtension = data => {
  * @param {object} data 扩展相关信息
  */
 export const updateExtension = data => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .post('/native/updateExtension', data)
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .post('/native/updateExtension', data)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -145,12 +145,12 @@ export const updateExtension = data => {
  * @param {string} path 扩展所在目录
  */
 export const installLocalExtension = path => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .post('/native/installLocalExtension', {path: path})
-            .then(response => resolve(response.data.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .post('/native/installLocalExtension', { path: path })
+      .then(response => resolve(response.data.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -159,12 +159,12 @@ export const installLocalExtension = path => {
  * @param {boolean} isLocal 是否本地加载的扩展
  */
 export const uninstallExtension = (path, local) => {
-    return new Promise((resolve, reject) => {
-        client
-            .post('/native/uninstallExtension', {path, local})
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .post('/native/uninstallExtension', { path, local })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -172,12 +172,26 @@ export const uninstallExtension = (path, local) => {
  * @param {object} data
  */
 export const toggleExtension = data => {
-    return new Promise((resolve, reject) => {
-        client
-            .post('/native/toggleExtension', data)
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .post('/native/toggleExtension', data)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
+}
+
+/**
+ * 保存指定扩展的设置
+ * @param {String} path 扩展路径
+ * @param {object} setting 扩展设置信息
+ */
+export const updateExtensionSetting = (path, setting) => {
+  return new Promise((resolve, reject) => {
+    client
+      .post('/native/updateExtensionSetting', { path, setting })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -185,11 +199,24 @@ export const toggleExtension = data => {
  * @param {object} data
  */
 export const openUrl = url => {
-    if (window.navigator.userAgent.indexOf('JavaFX') !== -1) {
-        clientNoSpin.post('/native/openUrl', {url: encodeURIComponent(url)})
-    } else {
-        window.open(url)
-    }
+  if (window.navigator.userAgent.indexOf('JavaFX') !== -1) {
+    clientNoSpin.post('/native/openUrl', { url: encodeURIComponent(url) })
+  } else {
+    window.open(url)
+  }
+}
+
+/**
+ * 在解析任务时触发
+ * @param {object} request
+ */
+export const onResolve = request => {
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .post('/native/onResolve', request)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -197,48 +224,48 @@ export const openUrl = url => {
  * @param {string} path 更新包下载地址
  */
 export const doUpdate = path => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .post('/native/doUpdate', {path: path})
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .post('/native/doUpdate', { path: path })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 更新软件进度获取
  */
 export const getUpdateProgress = () => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .get('/native/getUpdateProgress')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .get('/native/getUpdateProgress')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 重启软件
  */
 export const doRestart = () => {
-    return new Promise((resolve, reject) => {
-        client
-            .get('/native/doRestart')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    client
+      .get('/native/doRestart')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
  * 取软件设置信息
  */
 export const getConfig = () => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .get('/native/getConfig')
-            .then(response => resolve(response.data))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .get('/native/getConfig')
+      .then(response => resolve(response.data))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -246,12 +273,12 @@ export const getConfig = () => {
  * @param {object} config
  */
 export const setConfig = config => {
-    return new Promise((resolve, reject) => {
-        client
-            .put('/native/setConfig', config)
-            .then(response => resolve(response))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .put('/native/setConfig', config)
+      .then(response => resolve(response))
+      .catch(error => reject(error))
+  })
 }
 
 /**
@@ -259,10 +286,10 @@ export const setConfig = config => {
  * @param {object} data
  */
 export const copy = data => {
-    return new Promise((resolve, reject) => {
-        clientNoSpin
-            .put('/native/copy', data)
-            .then(response => resolve(response))
-            .catch(error => reject(error))
-    })
+  return new Promise((resolve, reject) => {
+    clientNoSpin
+      .put('/native/copy', data)
+      .then(response => resolve(response))
+      .catch(error => reject(error))
+  })
 }

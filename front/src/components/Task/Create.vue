@@ -30,7 +30,7 @@
           <Input :disabled="disabledForm"
             v-model="form.response.fileName" />
         </FormItem>
-        <FormItem :label="$t('tasks.fileSize')">{{ form.response.totalSize?$numeral(form.response.totalSize).format('0.00b'):$t('tasks.unknowLeft') }}</FormItem>
+        <FormItem :label="$t('tasks.fileSize')">{{ form.response.totalSize?$numeral(form.response.totalSize).format('0.00 ib'):$t('tasks.unknowLeft') }}</FormItem>
         <FormItem :label="$t('tasks.connections')"
           prop="config.connections">
           <Slider v-if="response.supportRange"
@@ -75,6 +75,12 @@ export default {
     },
     response: {
       type: Object
+    },
+    config: {
+      type: Object
+    },
+    data: {
+      type: Object
     }
   },
   data() {
@@ -86,7 +92,8 @@ export default {
         taskId: undefined,
         request: this.request,
         response: this.response,
-        config: {}
+        config: this.config,
+        data: this.data
       },
       rules: {
         taskId: [{ required: true, message: this.$t('tip.notNull') }],
@@ -100,6 +107,7 @@ export default {
     request() {
       this.form.request = this.request
       this.form.response = this.response
+      this.form.data = this.data
       this.setDefaultConfig()
     }
   },
@@ -193,15 +201,19 @@ export default {
       }
     },
     setDefaultConfig() {
+      this.form.config = {}
       this.$noSpinHttp.get('http://127.0.0.1:26339/config').then(result => {
         const serverConfig = result.data
         this.form.config = {
-          filePath: serverConfig.filePath,
-          connections: serverConfig.connections,
-          timeout: serverConfig.timeout,
-          retryCount: serverConfig.retryCount,
-          autoRename: serverConfig.autoRename,
-          speedLimit: serverConfig.speedLimit
+          ...{
+            filePath: serverConfig.filePath,
+            connections: serverConfig.connections,
+            timeout: serverConfig.timeout,
+            retryCount: serverConfig.retryCount,
+            autoRename: serverConfig.autoRename,
+            speedLimit: serverConfig.speedLimit
+          },
+          ...this.config
         }
       })
     }

@@ -84,6 +84,10 @@
                 :value="option.value">{{ option.text }}</Option>
             </Select>
           </FormItem>
+          <FormItem :label="$t('setting.autoOpen')"
+            prop="appConfig.autoOpen">
+            <Switch v-model="form.appConfig.autoOpen"></Switch>
+          </FormItem>
           <FormItem :label="$t('setting.secondProxy.secondProxy')">
             <Switch v-model="secondProxyEnable"
               @on-change="switchSecondProxy"></Switch>
@@ -130,15 +134,13 @@
         </div>
       </Panel>
     </Collapse>
-    <div style="padding-top:1.25rem;">
-      <Button type="primary"
-        @click="setConfig">{{ $t('tip.save') }}</Button>
-    </div>
   </Form>
 </template>
 <script>
 import FileChoose from '../components/FileChoose'
 import { getConfig, setConfig } from '../common/native.js'
+
+let debounceTimer
 
 export default {
   name: 'setting',
@@ -179,19 +181,26 @@ export default {
       }
     }
   },
+  watch: {
+    form: {
+      handler(nowVal, oldVal) {
+        //不是首次加载触发
+        if (Object.keys(oldVal.downConfig).length !== 0) {
+          if (debounceTimer) {
+            clearTimeout(debounceTimer)
+          }
+          debounceTimer = setTimeout(() => {
+            debounceTimer = null
+            this.setConfig()
+          }, 300)
+        }
+      },
+      deep: true
+    }
+  },
   methods: {
     switchSecondProxy(val) {
       if (val) {
-        //设置默认值
-        if (!this.form.appConfig.proxyConfig) {
-          this.$set(this.form.appConfig, 'proxyConfig', {
-            proxyType: 'HTTP',
-            host: null,
-            port: null,
-            user: null,
-            pwd: null
-          })
-        }
         this.rules['appConfig.proxyConfig.proxyType'] = [{ required: true, message: this.$t('tip.notNull') }]
         this.rules['appConfig.proxyConfig.host'] = [{ required: true, message: this.$t('tip.notNull') }]
         this.rules['appConfig.proxyConfig.port'] = [{ required: true, message: this.$t('tip.notNull') }]
@@ -199,6 +208,7 @@ export default {
         this.rules['appConfig.proxyConfig.proxyType'] = null
         this.rules['appConfig.proxyConfig.host'] = null
         this.rules['appConfig.proxyConfig.port'] = null
+        this.setConfig()
       }
     },
     async getConfig() {
@@ -209,6 +219,16 @@ export default {
         appConfig: { ...appConfig }
       }
       this.secondProxyEnable = !!this.form.appConfig.proxyConfig
+      //设置默认值
+      if (!this.form.appConfig.proxyConfig) {
+        this.$set(this.form.appConfig, 'proxyConfig', {
+          proxyType: 'HTTP',
+          host: null,
+          port: null,
+          user: null,
+          pwd: null
+        })
+      }
       if (this.form.downConfig.speedLimit > 0) {
         this.form.downConfig.speedLimit /= 1024
       }
@@ -219,7 +239,8 @@ export default {
     async setConfig() {
       this.$refs['form'].validate(async valid => {
         if (valid) {
-          let downConfig = { ...this.form.downConfig }
+          let downConfig = { ...{}, ...this.form.downConfig }
+          let appConfig = { ...{}, ...this.form.appConfig }
           if (downConfig.speedLimit > 0) {
             downConfig.speedLimit *= 1024
           }
@@ -227,24 +248,25 @@ export default {
             downConfig.totalSpeedLimit *= 1024
           }
           if (!this.secondProxyEnable) {
-            this.$delete(this.form.appConfig, 'proxyConfig')
-            delete downConfig.proxyConfig
+            this.$delete(appConfig, 'proxyConfig')
+            this.$delete(downConfig, 'proxyConfig')
           } else {
             downConfig.proxyConfig = { ...this.form.appConfig.proxyConfig }
           }
-          await this.$http.put('http://127.0.0.1:26339/config', downConfig)
-          await setConfig(this.form.appConfig)
+          await this.$noSpinHttp.put('http://127.0.0.1:26339/config', downConfig)
+          await setConfig(appConfig)
+          this.$Message.success(this.$t('tip.saveSucc'))
           if (this.$i18n.locale != this.form.appConfig.locale) {
             this.$i18n.locale = this.form.appConfig.locale
             //强制渲染一遍，避免切换语言后下拉框不渲染的问题
-            const uiMode = this.form.appConfig.uiMode
+            /* const uiMode = this.form.appConfig.uiMode
             const updateCheckRate = this.form.appConfig.updateCheckRate
             this.form.appConfig.uiMode = null
             this.form.appConfig.updateCheckRate = null
             setTimeout(() => {
               this.form.appConfig.uiMode = uiMode
               this.form.appConfig.updateCheckRate = updateCheckRate
-            }, 0)
+            }, 0) */
           }
         }
       })

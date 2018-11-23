@@ -9,8 +9,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +30,7 @@ import org.pdown.rest.base.exception.NotFoundException;
 import org.pdown.rest.base.exception.ParameterException;
 import org.pdown.rest.content.ConfigContent;
 import org.pdown.rest.content.HttpDownContent;
+import org.pdown.rest.entity.DownInfo;
 import org.pdown.rest.entity.HttpResult;
 import org.pdown.rest.entity.ServerConfigInfo;
 import org.pdown.rest.form.CreateTaskForm;
@@ -49,8 +48,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -88,57 +85,62 @@ public class TaskController {
     HttpDownBootstrap httpDownBootstrap = bootstrapBuilder.response(createTaskForm.getResponse())
         .downConfig(buildConfig(createTaskForm.getConfig()))
         .taskInfo(taskInfo)
-        .callback(new PersistenceHttpDownCallback())
+        .callback(HttpDownRestCallback.getCallback())
         .proxyConfig(ConfigContent.getInstance().get().getProxyConfig())
         .build();
     HttpDownContent downContent = HttpDownContent.getInstance();
     String id = UUID.randomUUID().toString();
+    boolean startFlag = false;
     synchronized (downContent) {
+      if (refresh) {
+        //find same task
+        DownInfo sameDown = downContent.get().values().stream()
+            .filter(downInfo -> {
+              if (downInfo.getBootstrap().getTaskInfo().getStatus() != HttpDownStatus.DONE) {
+                HttpDownBootstrap bootstrap = downInfo.getBootstrap();
+                Path newTaskPath = Paths.get(httpDownBootstrap.getDownConfig().getFilePath(), httpDownBootstrap.getResponse().getFileName());
+                Path oldTaskPath = Paths.get(bootstrap.getDownConfig().getFilePath(), bootstrap.getResponse().getFileName());
+                return newTaskPath.equals(oldTaskPath);
+              }
+              return false;
+            })
+            .findFirst()
+            .orElse(null);
+        //refresh task
+        if (sameDown != null) {
+          refreshCommon(sameDown.getId(), createTaskForm.getRequest(), false);
+          TaskForm taskForm = TaskForm.parse(sameDown);
+          return ResponseEntity.ok(taskForm);
+        }
+      }
       long runningCount = downContent.get().values().stream()
-          .filter(bootstrap -> bootstrap.getTaskInfo().getStatus() == HttpDownStatus.RUNNING)
+          .filter(d -> d.getBootstrap().getTaskInfo().getStatus() == HttpDownStatus.RUNNING)
           .count();
       if (runningCount < ConfigContent.getInstance().get().getTaskLimit()) {
-        try {
-          httpDownBootstrap.start();
-        } catch (BootstrapException e) {
-          if (e instanceof BootstrapPathEmptyException) {
-            throw new ParameterException(4003, "Save path is empty");
-          } else if (e instanceof BootstrapCreateDirException) {
-            throw new ParameterException(4004, "Can't create dir");
-          } else if (e instanceof BootstrapNoPermissionException) {
-            throw new ParameterException(4005, "No permission");
-          } else if (e instanceof BootstrapNoSpaceException) {
-            throw new ParameterException(4006, "No space");
-          } else if (e instanceof BootstrapFileAlreadyExistsException) {
-            if (refresh) {
-              //find same task
-              Entry<String, HttpDownBootstrap> sameEntry = downContent.get().entrySet().stream()
-                  .filter(entry -> {
-                    HttpDownBootstrap bootstrap = entry.getValue();
-                    Path newTaskPath = Paths.get(createTaskForm.getConfig().getFilePath(), createTaskForm.getResponse().getFileName());
-                    Path oldTaskPath = Paths.get(bootstrap.getDownConfig().getFilePath(), bootstrap.getResponse().getFileName());
-                    return newTaskPath.equals(oldTaskPath);
-                  })
-                  .findFirst()
-                  .orElse(null);
-              //refresh task
-              if (sameEntry != null) {
-                return refreshCommon(sameEntry.getKey(), createTaskForm.getRequest());
-              }
-            }
-            throw new ParameterException(4007, "File already exists");
-          }
+        startFlag = true;
+      }
+    }
+    DownInfo downInfo = new DownInfo(id, httpDownBootstrap, createTaskForm.getData());
+    downContent.put(id, downInfo).save();
+    if (startFlag) {
+      try {
+        httpDownBootstrap.start();
+      } catch (BootstrapException e) {
+        if (e instanceof BootstrapPathEmptyException) {
+          throw new ParameterException(4003, "Save path is empty");
+        } else if (e instanceof BootstrapCreateDirException) {
+          throw new ParameterException(4004, "Can't create dir");
+        } else if (e instanceof BootstrapNoPermissionException) {
+          throw new ParameterException(4005, "No permission");
+        } else if (e instanceof BootstrapNoSpaceException) {
+          throw new ParameterException(4006, "No space");
+        } else if (e instanceof BootstrapFileAlreadyExistsException) {
+          throw new ParameterException(4007, "File already exists");
         }
       }
     }
-    downContent.put(id, httpDownBootstrap).save();
-    PersistenceHttpDownCallback.calcSpeedLimit();
-    TaskForm taskForm = new TaskForm();
-    taskForm.setId(id);
-    taskForm.setRequest(HttpRequestForm.parse(httpDownBootstrap.getRequest()));
-    taskForm.setConfig(httpDownBootstrap.getDownConfig());
-    taskForm.setInfo(httpDownBootstrap.getTaskInfo());
-    taskForm.setResponse(httpDownBootstrap.getResponse());
+    HttpDownRestCallback.calcSpeedLimit();
+    TaskForm taskForm = TaskForm.parse(downInfo);
     TaskEventHandler.dispatchEvent(new EventForm(TaskEvent.CREATE, taskForm));
     return ResponseEntity.ok(taskForm);
   }
@@ -146,50 +148,52 @@ public class TaskController {
   @GetMapping("tasks")
   public ResponseEntity list(@RequestParam(required = false, name = "status") String statuses) {
     List<TaskForm> list = HttpDownContent.getInstance().get()
-        .entrySet()
+        .values()
         .stream()
-        .filter(entry -> {
+        .filter(downInfo -> {
           if (StringUtils.isEmpty(statuses)) {
             return true;
           } else {
-            return Arrays.stream(statuses.split(",")).anyMatch(status -> status.equals(entry.getValue().getTaskInfo().getStatus() + ""));
+            return Arrays.stream(statuses.split(",")).anyMatch(status -> status.equals(downInfo.getBootstrap().getTaskInfo().getStatus() + ""));
           }
         })
-        .sorted((e1, e2) -> (int) (e2.getValue().getTaskInfo().getStartTime() - e1.getValue().getTaskInfo().getStartTime()))
-        .map(entry -> TaskForm.parse(entry.getKey(), entry.getValue()))
+        .sorted((e1, e2) -> (int) (e1.getBootstrap().getTaskInfo().getStartTime() - e2.getBootstrap().getTaskInfo().getStartTime()))
+        .map(downInfo -> TaskForm.parse(downInfo))
         .collect(Collectors.toList());
     return ResponseEntity.ok(list);
   }
 
   @GetMapping("tasks/{id}")
   public ResponseEntity detail(@PathVariable String id) {
-    HttpDownBootstrap bootstrap = HttpDownContent.getInstance().get(id);
-    if (bootstrap == null) {
+    DownInfo downInfo = HttpDownContent.getInstance().get(id);
+    if (downInfo == null) {
       throw new NotFoundException("task does not exist");
     }
-    return ResponseEntity.ok(TaskForm.parse(id, bootstrap));
+    return ResponseEntity.ok(TaskForm.parse(downInfo));
   }
 
   @PutMapping("tasks/{id}")
   public ResponseEntity refresh(@PathVariable String id, HttpServletRequest request) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     HttpRequestForm requestForm = mapper.readValue(request.getInputStream(), HttpRequestForm.class);
-    return refreshCommon(id, requestForm);
+    return refreshCommon(id, requestForm, true);
   }
 
-  private ResponseEntity refreshCommon(String id, HttpRequestForm requestForm) throws MalformedURLException {
-    HttpDownBootstrap bootstrap = HttpDownContent.getInstance().get(id);
-    if (bootstrap == null) {
+  private ResponseEntity refreshCommon(String id, HttpRequestForm requestForm, boolean needResume) throws MalformedURLException {
+    DownInfo downInfo = HttpDownContent.getInstance().get(id);
+    if (downInfo == null) {
       throw new NotFoundException("task does not exist");
     }
-    boolean pauseFlag = false;
+    HttpDownBootstrap bootstrap = downInfo.getBootstrap();
+    boolean isRun = false;
     if (bootstrap.getTaskInfo().getStatus() == HttpDownStatus.RUNNING) {
+      isRun = true;
       bootstrap.pause();
-      pauseFlag = true;
     }
     bootstrap.setRequest(HttpDownUtil.buildRequest(requestForm.getMethod(), requestForm.getUrl(), requestForm.getHeads(), requestForm.getBody()));
     HttpDownContent.getInstance().save();
-    if (pauseFlag) {
+    //刷新正在运行中的任务或者一定要开始的任务，则调用任务恢复方法
+    if (isRun || needResume) {
       ResumeVo resumeVo = handleResume(Arrays.asList(id));
       TaskEventHandler.dispatchEvent(new EventForm(TaskEvent.RESUME, resumeVo));
     }
@@ -232,10 +236,11 @@ public class TaskController {
   private void commonDelete(List<String> idArray, boolean delFile) throws IOException {
     HttpDownContent httpDownContent = HttpDownContent.getInstance();
     for (String id : idArray) {
-      HttpDownBootstrap bootstrap = HttpDownContent.getInstance().get(id);
-      if (bootstrap == null) {
+      DownInfo downInfo = HttpDownContent.getInstance().get(id);
+      if (downInfo == null) {
         continue;
       }
+      HttpDownBootstrap bootstrap = downInfo.getBootstrap();
       bootstrap.close();
       //Delete download progress record file
       String recordFile = httpDownContent.progressSavePath(bootstrap.getDownConfig(), bootstrap.getResponse());
@@ -255,13 +260,13 @@ public class TaskController {
   public ResponseEntity pauseDown(@PathVariable String ids) {
     String[] idArray = ids.split(",");
     for (String id : idArray) {
-      HttpDownBootstrap httpDownBootstrap = HttpDownContent.getInstance().get(id);
-      if (httpDownBootstrap == null) {
+      DownInfo downInfo = HttpDownContent.getInstance().get(id);
+      if (downInfo == null) {
         continue;
       }
-      HttpDownContent.getInstance().get(id).pause();
+      downInfo.getBootstrap().pause();
     }
-    PersistenceHttpDownCallback.calcSpeedLimit();
+    HttpDownRestCallback.calcSpeedLimit();
     HttpDownContent.getInstance().save();
     TaskEventHandler.dispatchEvent(new EventForm(TaskEvent.PAUSE, idArray));
     return ResponseEntity.ok(null);
@@ -274,20 +279,20 @@ public class TaskController {
         mapper.readValue(request.getInputStream(), ArrayList.class) : new ArrayList<>();
     HttpDownContent.getInstance()
         .get()
-        .entrySet()
+        .values()
         .stream()
-        .filter(entry -> {
-          TaskInfo taskInfo = entry.getValue().getTaskInfo();
+        .filter(downInfo -> {
+          TaskInfo taskInfo = downInfo.getBootstrap().getTaskInfo();
           if (taskInfo.getStatus() == HttpDownStatus.RUNNING
               || taskInfo.getStatus() == HttpDownStatus.WAIT) {
-            if (ids.size() == 0 || ids.contains(entry.getKey())) {
+            if (ids.size() == 0 || ids.contains(downInfo.getId())) {
               return true;
             }
           }
           return false;
         })
-        .forEach(entry -> entry.getValue().pause());
-    PersistenceHttpDownCallback.calcSpeedLimit();
+        .forEach(downInfo -> downInfo.getBootstrap().pause());
+    HttpDownRestCallback.calcSpeedLimit();
     HttpDownContent.getInstance().save();
     TaskEventHandler.dispatchEvent(new EventForm(TaskEvent.PAUSE, ids));
     return ResponseEntity.ok(null);
@@ -296,7 +301,7 @@ public class TaskController {
   @PutMapping("tasks/{ids}/resume")
   public ResponseEntity resume(@PathVariable String ids) {
     ResumeVo resumeVo = handleResume(Arrays.asList(ids.split(",")));
-    PersistenceHttpDownCallback.calcSpeedLimit();
+    HttpDownRestCallback.calcSpeedLimit();
     HttpDownContent.getInstance().save();
     TaskEventHandler.dispatchEvent(new EventForm(TaskEvent.RESUME, resumeVo));
     return ResponseEntity.ok(resumeVo);
@@ -308,7 +313,7 @@ public class TaskController {
     List<String> ids = request.getContentLength() > 0 ?
         mapper.readValue(request.getInputStream(), ArrayList.class) : new ArrayList<>();
     ResumeVo resumeVo = handleResume(ids);
-    PersistenceHttpDownCallback.calcSpeedLimit();
+    HttpDownRestCallback.calcSpeedLimit();
     HttpDownContent.getInstance().save();
     TaskEventHandler.dispatchEvent(new EventForm(TaskEvent.RESUME, resumeVo));
     return ResponseEntity.ok(resumeVo);
@@ -323,7 +328,7 @@ public class TaskController {
         .filter(id -> HttpDownContent.getInstance().get(id) != null)
         .map(id -> {
           TaskForm taskForm = new TaskForm();
-          HttpDownBootstrap httpDownBootstrap = HttpDownContent.getInstance().get(id);
+          HttpDownBootstrap httpDownBootstrap = HttpDownContent.getInstance().get(id).getBootstrap();
           taskForm.setId(id);
           taskForm.setInfo(httpDownBootstrap.getTaskInfo());
           taskForm.setResponse(httpDownBootstrap.getResponse());
@@ -336,15 +341,14 @@ public class TaskController {
   //Pause running task
   private ResumeVo handleResume(List<String> resumeIds) {
     ResumeVo resumeVo = new ResumeVo();
-    List<Entry<String, HttpDownBootstrap>> runList = new ArrayList<>();
-    List<Entry<String, HttpDownBootstrap>> waitList = new ArrayList<>();
-    for (Entry<String, HttpDownBootstrap> entry : HttpDownContent.getInstance().get().entrySet()) {
-      HttpDownBootstrap httpDownBootstrap = entry.getValue();
-      int status = httpDownBootstrap.getTaskInfo().getStatus();
+    List<DownInfo> runList = new ArrayList<>();
+    List<DownInfo> waitList = new ArrayList<>();
+    for (DownInfo downInfo : HttpDownContent.getInstance().get().values()) {
+      int status = downInfo.getBootstrap().getTaskInfo().getStatus();
       if (status == HttpDownStatus.RUNNING) {
-        runList.add(entry);
+        runList.add(downInfo);
       } else if (status != HttpDownStatus.DONE) {
-        waitList.add(entry);
+        waitList.add(downInfo);
       }
     }
 
@@ -357,22 +361,22 @@ public class TaskController {
       int needResumeCount = taskLimit - runList.size();
       //计算出要继续下载的任务ID和待下载的任务ID
       for (int i = 0; i < waitList.size(); i++) {
-        Entry<String, HttpDownBootstrap> entry = waitList.get(i);
+        DownInfo downInfo = waitList.get(i);
         if (i < needResumeCount) {
-          needResumeIds.add(entry.getKey());
+          needResumeIds.add(downInfo.getId());
         } else {
-          needWaitIds.add(entry.getKey());
+          needWaitIds.add(downInfo.getId());
         }
       }
     } else {
       for (int i = 0, j = 0; i < waitList.size(); i++) {
-        Entry<String, HttpDownBootstrap> entry = waitList.get(i);
-        if (resumeIds.contains(entry.getKey())) {
+        DownInfo downInfo = waitList.get(i);
+        if (resumeIds.contains(downInfo.getId())) {
           if (j < taskLimit) {
-            needResumeIds.add(entry.getKey());
+            needResumeIds.add(downInfo.getId());
             j++;
           } else {
-            needWaitIds.add(entry.getKey());
+            needWaitIds.add(downInfo.getId());
           }
         }
       }
@@ -386,23 +390,22 @@ public class TaskController {
       if (needPauseCount > 0) {
         //暂停正在运行的任务,状态更新成待下载
         for (int i = 0; i < needPauseCount; i++) {
-          Entry<String, HttpDownBootstrap> entry = runList.get(i);
-          needPauseIds.add(entry.getKey());
-          entry.getValue().pause();
-          needWaitIds.add(entry.getKey());
+          DownInfo downInfo = runList.get(i);
+          downInfo.getBootstrap().pause();
+          needWaitIds.add(downInfo.getId());
         }
       }
       //开始指定要继续下载的任务
-      for (Entry<String, HttpDownBootstrap> entry : waitList) {
-        if (needResumeIds.contains(entry.getKey())) {
-          entry.getValue().resume();
+      for (DownInfo downInfo : waitList) {
+        if (needResumeIds.contains(downInfo.getId())) {
+          downInfo.getBootstrap().resume();
         }
       }
     }
     if (needWaitIds.size() > 0) {
       waitList.stream()
-          .filter(entry -> needWaitIds.contains(entry.getKey()))
-          .forEach(entry -> entry.getValue().getTaskInfo().setStatus(HttpDownStatus.WAIT));
+          .filter(downInfo -> needWaitIds.contains(downInfo.getId()))
+          .forEach(downInfo -> downInfo.getBootstrap().getTaskInfo().setStatus(HttpDownStatus.WAIT));
     }
     return resumeVo;
   }

@@ -40,6 +40,7 @@ import org.pdown.gui.http.EmbedHttpServer;
 import org.pdown.gui.http.controller.ApiController;
 import org.pdown.gui.http.controller.NativeController;
 import org.pdown.gui.http.controller.PacController;
+import org.pdown.gui.rest.HttpDownAppCallback;
 import org.pdown.gui.util.AppUtil;
 import org.pdown.gui.util.ConfigUtil;
 import org.pdown.gui.util.ExecUtil;
@@ -47,6 +48,7 @@ import org.pdown.gui.util.I18nUtil;
 import org.pdown.rest.DownRestServer;
 import org.pdown.rest.content.ConfigContent;
 import org.pdown.rest.content.RestWebServerFactoryCustomizer;
+import org.pdown.rest.controller.HttpDownRestCallback;
 import org.pdown.rest.entity.ServerConfigInfo;
 import org.pdown.rest.util.PathUtil;
 import org.slf4j.Logger;
@@ -60,7 +62,7 @@ public class DownApplication extends Application {
 
   private static final String OS = OsUtil.isWindows() ? "windows"
       : (OsUtil.isMac() ? "mac" : "linux");
-  private static final String ICON_NAME = OS + "/logo.png";
+  private static final String ICON_PATH = OS + (OsUtil.isWindowsXP() ? "/logo_xp.png" : "/logo.png");
 
   public static DownApplication INSTANCE;
 
@@ -89,9 +91,12 @@ public class DownApplication extends Application {
     initEmbedHttpServer();
     initExtension();
     initTray();
-    initWindow();
-    initBrowser();
-    loadUri(null, true);
+    //xp不支持webview
+    if (!OsUtil.isWindowsXP()) {
+      initWindow();
+      initBrowser();
+    }
+    loadUri(null, true, true);
   }
 
 
@@ -117,6 +122,7 @@ public class DownApplication extends Application {
 
   private void initRest() {
     //init rest server config
+    HttpDownRestCallback.setCallback(new HttpDownAppCallback());
     RestWebServerFactoryCustomizer.init(null);
     ServerConfigInfo serverConfigInfo = ConfigContent.getInstance().get();
     serverConfigInfo.setPort(REST_PORT);
@@ -150,7 +156,7 @@ public class DownApplication extends Application {
     //根据扩展生成pac文件并切换系统代理
     try {
       ExtensionContent.load();
-      //AppUtil.refreshPAC();
+      AppUtil.refreshPAC();
     } catch (IOException e) {
       LOGGER.error("Extension content load error", e);
     }
@@ -214,12 +220,12 @@ public class DownApplication extends Application {
       // 获得系统托盘对象
       SystemTray systemTray = SystemTray.getSystemTray();
       // 获取图片所在的URL
-      URL url = Thread.currentThread().getContextClassLoader().getResource(ICON_NAME);
+      URL url = Thread.currentThread().getContextClassLoader().getResource(ICON_PATH);
       // 为系统托盘加托盘图标
       Image trayImage = Toolkit.getDefaultToolkit().getImage(url);
       Dimension trayIconSize = systemTray.getTrayIconSize();
       trayImage = trayImage.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH);
-      trayIcon = new TrayIcon(trayImage, "Proxy Down");
+      trayIcon = new TrayIcon(trayImage, "Proxyee Down");
       systemTray.add(trayIcon);
       loadPopupMenu();
       //双击事件监听
@@ -236,6 +242,8 @@ public class DownApplication extends Application {
     setItem.addActionListener(event -> loadUri("/#/setting", true));
     MenuItem aboutItem = new MenuItem(I18nUtil.getMessage("gui.tray.about"));
     aboutItem.addActionListener(event -> loadUri("/#/about", true));
+    MenuItem supportItem = new MenuItem(I18nUtil.getMessage("gui.tray.support"));
+    supportItem.addActionListener(event -> loadUri("/#/support", true));
     MenuItem closeItem = new MenuItem(I18nUtil.getMessage("gui.tray.exit"));
     closeItem.addActionListener(event -> {
       Platform.exit();
@@ -245,6 +253,7 @@ public class DownApplication extends Application {
     popupMenu.addSeparator();
     popupMenu.add(setItem);
     popupMenu.add(aboutItem);
+    popupMenu.add(supportItem);
     popupMenu.addSeparator();
     popupMenu.add(closeItem);
     trayIcon.setPopupMenu(popupMenu);
@@ -266,7 +275,7 @@ public class DownApplication extends Application {
 
   //加载gui窗口
   private void initWindow() {
-    stage.setTitle("Proxy Down");
+    stage.setTitle("Proxyee Down");
     Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
     int width = 1024;
     int height = 576;
@@ -274,7 +283,7 @@ public class DownApplication extends Application {
     stage.setY((bounds.getHeight() - height) / 2);
     stage.setMinWidth(width);
     stage.setMinHeight(height);
-    stage.getIcons().add(new javafx.scene.image.Image(Thread.currentThread().getContextClassLoader().getResourceAsStream(ICON_NAME)));
+    stage.getIcons().add(new javafx.scene.image.Image(Thread.currentThread().getContextClassLoader().getResourceAsStream(ICON_PATH)));
     stage.setResizable(true);
     //关闭窗口监听
     stage.setOnCloseRequest(event -> {
@@ -310,22 +319,32 @@ public class DownApplication extends Application {
     }
   }
 
-  public void loadUri(String uri, boolean isTray) {
+  public void loadUri(String uri, boolean isTray, boolean isStartup) {
     String url = "http://127.0.0.1:" + FRONT_PORT + (uri == null ? "" : uri);
-    if (PDownConfigContent.getInstance().get().getUiMode() == 0) {
-      try {
-        Desktop.getDesktop().browse(URI.create(url));
-      } catch (IOException e) {
-        LOGGER.error("Open browse error", e);
+    boolean autoOpen = PDownConfigContent.getInstance().get().isAutoOpen();
+    if (OsUtil.isWindowsXP() || PDownConfigContent.getInstance().get().getUiMode() == 0) {
+      if (!isStartup || autoOpen) {
+        try {
+          Desktop.getDesktop().browse(URI.create(url));
+        } catch (IOException e) {
+          LOGGER.error("Open browse error", e);
+        }
       }
+
     } else {
       Platform.runLater(() -> {
         if (uri != null || !browser.isLoad()) {
           browser.load(url);
         }
-        show(isTray);
+        if (!isStartup || autoOpen) {
+          show(isTray);
+        }
       });
     }
+  }
+
+  public void loadUri(String uri, boolean isTray) {
+    loadUri(uri, isTray, false);
   }
 
   //提示并退出程序

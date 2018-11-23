@@ -1,7 +1,7 @@
 package org.pdown.gui.extension.mitm.ssl;
 
-import com.github.zhoujinshi.proxy.crt.CertUtil;
-import com.github.zhoujinshi.proxy.server.HttpProxyCACertFactory;
+import com.github.monkeywie.proxyee.crt.CertUtil;
+import com.github.monkeywie.proxyee.server.HttpProxyCACertFactory;
 import java.io.File;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;

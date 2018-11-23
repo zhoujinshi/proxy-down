@@ -1,9 +1,9 @@
 package org.pdown.gui.extension.mitm.intercept;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.zhoujinshi.proxy.intercept.HttpProxyIntercept;
-import com.github.zhoujinshi.proxy.intercept.HttpProxyInterceptPipeline;
-import com.github.zhoujinshi.proxy.util.HttpUtil;
+import com.github.monkeywie.proxyee.intercept.HttpProxyIntercept;
+import com.github.monkeywie.proxyee.intercept.HttpProxyInterceptPipeline;
+import com.github.monkeywie.proxyee.util.HttpUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;

@@ -17,9 +17,8 @@ import javax.swing.JOptionPane;
 
 public class Runner {
 
-  private static final String JAVA_CMD_PATH =
-      System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-  private static final String MAIN_JAR_PATH = "main/proxy-down-main.jar";
+  private static final String JAVA_CMD_PATH = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+  private static final String MAIN_JAR_PATH = "main/proxyee-down-main.jar";
   private static final String MAIN_JAR_BAK_PATH = MAIN_JAR_PATH + ".bak";
   private static final String VM_OPTIONS_PATH = "main/run.cfg";
 
@@ -35,8 +34,9 @@ public class Runner {
     if (!file.exists()) {
       try {
         file.createNewFile();
-        try (BufferedWriter writer =
-            new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
+        try (
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))
+        ) {
           writer.write("-Xms128m");
           writer.newLine();
           writer.write("-Xmx384m");
@@ -57,7 +57,7 @@ public class Runner {
   private static void fork() {
     File bakFile = new File(MAIN_JAR_BAK_PATH);
     if (bakFile.exists()) {
-      // 更新后删除旧版本
+      //更新后删除旧版本
       for (int i = 0; i < 30; i++) {
         if (new File(MAIN_JAR_PATH).delete()) {
           bakFile.renameTo(new File(MAIN_JAR_PATH));
@@ -91,7 +91,7 @@ public class Runner {
       boolean isClose = false;
       while ((line = br.readLine()) != null) {
         System.out.println(line);
-        if ("proxy-down-exit".equals(line)) {
+        if ("proxyee-down-exit".equals(line)) {
           isClose = true;
           break;
         }

@@ -1,5 +1,6 @@
 package org.pdown.gui.http.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.Channel;
@@ -19,8 +20,15 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
 import javafx.application.Platform;
+import javax.script.Invocable;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.SimpleScriptContext;
 import org.pdown.core.boot.HttpDownBootstrap;
 import org.pdown.core.dispatch.HttpDownCallback;
 import org.pdown.core.util.OsUtil;
@@ -30,6 +38,8 @@ import org.pdown.gui.content.PDownConfigContent;
 import org.pdown.gui.entity.PDownConfigInfo;
 import org.pdown.gui.extension.ExtensionContent;
 import org.pdown.gui.extension.ExtensionInfo;
+import org.pdown.gui.extension.HookScript;
+import org.pdown.gui.extension.HookScript.Event;
 import org.pdown.gui.extension.mitm.server.PDownProxyServer;
 import org.pdown.gui.extension.mitm.util.ExtensionCertUtil;
 import org.pdown.gui.extension.mitm.util.ExtensionProxyUtil;
@@ -38,6 +48,8 @@ import org.pdown.gui.http.util.HttpHandlerUtil;
 import org.pdown.gui.util.AppUtil;
 import org.pdown.gui.util.ConfigUtil;
 import org.pdown.gui.util.ExecUtil;
+import org.pdown.rest.form.HttpRequestForm;
+import org.pdown.rest.form.TaskForm;
 import org.pdown.rest.util.PathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +97,7 @@ public class NativeController {
   }
 
   //启动的时候检查一次
-  private boolean checkFlag = false;
+  private boolean checkFlag = true;
   private static final long WEEK = 7 * 24 * 60 * 60 * 1000L;
 
   @RequestMapping("getInitConfig")
@@ -179,7 +191,7 @@ public class NativeController {
   public FullHttpResponse doUpdate(Channel channel, FullHttpRequest request) throws Exception {
     Map<String, Object> map = getJSONParams(request);
     String url = (String) map.get("path");
-    String path = PathUtil.ROOT_PATH + File.separator + "proxy-down-main.jar.tmp";
+    String path = PathUtil.ROOT_PATH + File.separator + "proxyee-down-main.jar.tmp";
     try {
       File updateTmpJar = new File(path);
       if (updateTmpJar.exists()) {
@@ -188,7 +200,7 @@ public class NativeController {
       updateBootstrap = AppUtil.fastDownload(url, updateTmpJar, new HttpDownCallback() {
         @Override
         public void onDone(HttpDownBootstrap httpDownBootstrap) {
-          File updateBakJar = new File(updateTmpJar.getParent() + File.separator + "proxy-down-main.jar.bak");
+          File updateBakJar = new File(updateTmpJar.getParent() + File.separator + "proxyee-down-main.jar.bak");
           updateTmpJar.renameTo(updateBakJar);
         }
 
@@ -223,7 +235,7 @@ public class NativeController {
 
   @RequestMapping("doRestart")
   public FullHttpResponse doRestart(Channel channel, FullHttpRequest request) throws Exception {
-    System.out.println("proxy-down-exit");
+    System.out.println("proxyee-down-exit");
     return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
   }
 
@@ -280,7 +292,7 @@ public class NativeController {
     Map<String, Object> data = new HashMap<>();
     Map<String, Object> map = getJSONParams(request);
     String path = (String) map.get("path");
-    boolean local = (boolean) map.get("local");
+    boolean local = map.get("local") != null ? (boolean) map.get("local") : false;
     //卸载扩展
     ExtensionContent.remove(path, local);
     //刷新系统pac代理
@@ -313,16 +325,15 @@ public class NativeController {
     Map<String, Object> map = getJSONParams(request);
     String path = (String) map.get("path");
     boolean enabled = (boolean) map.get("enabled");
-    ExtensionContent.get()
+    boolean local = map.get("local") != null ? (boolean) map.get("local") : false;
+    ExtensionInfo extensionInfo = ExtensionContent.get()
         .stream()
-        .filter(extensionInfo -> extensionInfo.getMeta().getPath().equals(path))
+        .filter(e -> e.getMeta().getPath().equals(path))
         .findFirst()
-        .get()
-        .getMeta()
-        .setEnabled(enabled)
-        .save();
+        .get();
+    extensionInfo.getMeta().setEnabled(enabled).save();
     //刷新pac
-    ExtensionContent.refresh();
+    ExtensionContent.refresh(extensionInfo.getMeta().getFullPath(), local);
     AppUtil.refreshPAC();
     return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
   }
@@ -360,7 +371,7 @@ public class NativeController {
   public FullHttpResponse installCert(Channel channel, FullHttpRequest request) throws Exception {
     Map<String, Object> data = new HashMap<>();
     boolean status;
-    if (OsUtil.isUnix()) {
+    if (OsUtil.isUnix() || OsUtil.isWindowsXP()) {
       if (!AppUtil.checkIsInstalledCert()) {
         ExtensionCertUtil.buildCert(AppUtil.SSL_PATH, AppUtil.SUBJECT);
       }
@@ -408,10 +419,59 @@ public class NativeController {
     return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
   }
 
+  @RequestMapping("updateExtensionSetting")
+  public FullHttpResponse updateExtensionSetting(Channel channel, FullHttpRequest request) throws Exception {
+    Map<String, Object> map = getJSONParams(request);
+    String path = (String) map.get("path");
+    Map<String, Object> setting = (Map<String, Object>) map.get("setting");
+    ExtensionInfo extensionInfo = ExtensionContent.get()
+        .stream()
+        .filter(e -> e.getMeta().getPath().equals(path))
+        .findFirst()
+        .get();
+    extensionInfo.getMeta().setSettings(setting).save();
+    return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+  }
+
+  @RequestMapping("onResolve")
+  public FullHttpResponse onResolve(Channel channel, FullHttpRequest request) throws Exception {
+    HttpRequestForm taskRequest = getJSONParams(request, HttpRequestForm.class);
+    //遍历扩展模块是否有对应的处理
+    List<ExtensionInfo> extensionInfos = ExtensionContent.get();
+    for (ExtensionInfo extensionInfo : extensionInfos) {
+      if (extensionInfo.getMeta().isEnabled()) {
+        if (extensionInfo.getHookScript() != null
+            && !StringUtils.isEmpty(extensionInfo.getHookScript().getScript())) {
+          Event event = extensionInfo.getHookScript().hasEvent(HookScript.EVENT_RESOLVE, taskRequest.getUrl());
+          if (event != null) {
+            try {
+              //执行resolve方法
+              Object result = ExtensionUtil.invoke(extensionInfo, event, taskRequest, false);
+              if (result != null) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String temp = objectMapper.writeValueAsString(result);
+                TaskForm taskForm = objectMapper.readValue(temp, TaskForm.class);
+                //有一个扩展解析成功的话直接返回
+                return HttpHandlerUtil.buildJson(taskForm, Include.NON_DEFAULT);
+              }
+            } catch (Exception e) {
+              LOGGER.error("An exception occurred while resolve()", e);
+            }
+          }
+        }
+      }
+    }
+    return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+  }
+
   private Map<String, Object> getJSONParams(FullHttpRequest request) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
-    Map<String, Object> map = objectMapper.readValue(request.content().toString(Charset.forName("UTF-8")), Map.class);
-    return map;
+    return objectMapper.readValue(request.content().toString(Charset.forName("UTF-8")), Map.class);
+  }
+
+  private <T> T getJSONParams(FullHttpRequest request, Class<T> clazz) throws IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    return objectMapper.readValue(request.content().toString(Charset.forName("UTF-8")), clazz);
   }
 
 }

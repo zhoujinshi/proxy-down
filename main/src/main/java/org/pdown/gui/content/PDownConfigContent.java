@@ -38,7 +38,7 @@ public class PDownConfigContent extends PersistenceContent<PDownConfigInfo, PDow
     pDownConfigInfo.setLocale(defaultLocale.getLanguage() + "-" + defaultLocale.getCountry());
     //插件文件服务器
     List<String> extFileServers = new ArrayList<>();
-    extFileServers.add("https://github.com/zhoujinshi/proxy-down-extension/raw/master");
+    extFileServers.add("https://github.com/proxyee-down-org/proxyee-down-extension/raw/master");
     extFileServers.add("http://static.pdown.org/extensions");
     pDownConfigInfo.setExtFileServers(extFileServers);
     return pDownConfigInfo;
