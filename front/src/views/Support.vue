@@ -1,7 +1,6 @@
 <template>
   <div>
-    <Card v-if="softList.length>0"
-      style="margin-top:20px;">
+    <Card style="margin-top:20px;">
       <p slot="title">2018-11-23 编译</p>
     </Card>
   </div>
@@ -34,17 +33,21 @@ export default {
   text-align: center;
   margin: 5px;
 }
+
 .qr-container {
   display: inline-block;
 }
+
 .recommend-container {
   display: inline-flex;
   height: 300px;
 }
+
 .card-container b {
   display: inline-block;
   padding-top: 5px;
 }
+
 .card-container img {
   width: 200px;
   height: 200px;

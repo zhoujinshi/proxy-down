@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <exe4j version="5.1" transformSequenceNumber="2">
-  <directoryPresets config="F:/proxy-down-master/main/target" />
-  <application name="Proxy Down" distributionSourceDir="D:/Program Files (x86)/Proxy Down2">
+  <directoryPresets config="E:/proxy-down/main/target" />
+  <application name="Proxy Down" distributionSourceDir="D:/Program Files (x86)/Proxy Down">
     <languages>
       <principalLanguage id="en" customLocalizationFile="" />
     </languages>
   </application>
-  <executable name="Proxy Down" type="2" iconSet="true" iconFile="F:/proxy-down-master/front/public/favicon.ico" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="true" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false" amd64="true">
+  <executable name="Proxy Down" type="2" iconSet="true" iconFile="E:/proxy-down/front/public/favicon.ico" executableDir="." redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="true" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false" amd64="true">
     <messageSet />
     <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" companyName="" productVersion="" />
   </executable>
@@ -22,8 +22,8 @@
       <directory location="./jre" />
     </searchSequence>
     <classPath>
-      <archive location="F:/proxy-down-master/runner/target/proxy-down-runner.jar" failOnError="false" />
-      <archive location="F:/proxy-down-master/main/target/proxy-down-main.jar" failOnError="false" />
+      <archive location="E:/proxy-down/runner/target/proxyee-down-runner.jar" failOnError="false" />
+      <archive location="E:/proxy-down/main/target/proxyee-down-main.jar" failOnError="false" />
     </classPath>
     <nativeLibraryDirectories />
     <vmOptions />

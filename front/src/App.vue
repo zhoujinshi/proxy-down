@@ -22,12 +22,6 @@
           {{ $t("nav.setting") }}
         </i-menu-item>
       </Badge>
-      <Badge :count="$root.badges.about">
-        <i-menu-item name="about">
-          <Icon type="information-circled"></Icon>
-          {{ $t("nav.about") }}
-        </i-menu-item>
-      </Badge>
       <Badge :count="$root.badges.support">
         <i-menu-item name="support">
           <Icon type="social-usd"></Icon>

@@ -3,8 +3,7 @@ export default {
     tasks: 'Tasks',
     extension: 'Extensions',
     setting: 'Settings',
-    about: 'About',
-    support: 'Support Us'
+    support: 'BuildTime'
   },
   tip: {
     tip: 'Hint',

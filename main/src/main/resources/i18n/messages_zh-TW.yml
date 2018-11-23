@@ -10,6 +10,4 @@ gui:
   tray:
     show: 顯示
     set: 設定
-    about: 關於
-    support: 打賞
     exit: 結束

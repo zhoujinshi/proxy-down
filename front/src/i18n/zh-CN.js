@@ -3,8 +3,7 @@ export default {
     tasks: '任务管理',
     extension: '扩展管理',
     setting: '软件设置',
-    about: '关于项目',
-    support: '支持我们'
+    support: '编译时间'
   },
   tip: {
     tip: '提示',

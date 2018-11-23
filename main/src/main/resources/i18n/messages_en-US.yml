@@ -10,6 +10,4 @@ gui:
   tray:
     show: Show
     set: Settings
-    about: About
-    support: Donate
     exit: Exit
