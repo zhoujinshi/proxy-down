@@ -1,0 +1,1 @@
+java -jar GreenJVMMake.jar -t da -i ./data.jar -o ./
