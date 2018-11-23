@@ -2,84 +2,9 @@
   <div class="v-about">
     <Card>
       <p slot="title">{{ $t("about.project.title") }}</p>
-      <ul class="project-ul">
-        <li>
-          <p>{{ $t("about.project.content") }}</p>
-        </li>
-        <li>
-          <b>{{ $t("about.project.githubAddress") }}</b>
-          <a href="javascript:void(0)"
-            @click="openUrl('https://github.com/proxyee-down-org/proxyee-down')">
-            GitHub@proxyee-down
-          </a>
-        </li>
-        <li>
-          <b>{{ $t("about.project.official") }}</b>
-          <a href="javascript:void(0)"
-            @click="openUrl('https://pdown.org')">
-            pdown.org
-          </a>
-        </li>
-        <li>
-          <b>{{ $t("about.project.community") }}</b>
-          <a href="javascript:void(0)"
-            @click="openUrl('https://community.pdown.org')">
-            community.pdown.org
-          </a>
-        </li>
-        <li>
-          <b>{{ $t("about.project.tutorial") }}</b>
-          <a href="javascript:void(0)"
-            @click="openUrl('https://github.com/proxyee-down-org/proxyee-down/wiki/%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B')">
-            GitHub@proxyee-down/wiki
-          </a>
-        </li>
-        <li>
-          <b>{{ $t("about.project.feedback") }}</b>
-          <a href="javascript:void(0)"
-            @click="openUrl('https://github.com/proxyee-down-org/proxyee-down/issues')">
-            GitHub@proxyee-down/issues
-          </a>
-        </li>
-        <li>
-          <b>{{ $t("about.project.currentVersion") }}</b>
-          <span> {{ $config.version }}</span>
-        </li>
-        <li>
-          <b>{{ $t("about.project.checkUpdate") }}</b>
-          <Icon type="ios-refresh-empty"
-            @click="checkUpdate()"></Icon>
-        </li>
-      </ul>
     </Card>
 
     <br>
-
-    <Card class="team">
-      <p slot="title">{{ $t("about.team.title") }}</p>
-      <Card class="item">
-        <div>
-          <img src="team_header/monkeyWie.png"
-            @click="openUrl('https://github.com/monkeyWie')">
-          <b>monkeyWie</b>
-        </div>
-      </Card>
-      <Card class="item">
-        <div>
-          <img src="team_header/Black-Hole.png"
-            @click="openUrl('https://github.com/BlackHole1')">
-          <b>Black-Hole</b>
-        </div>
-      </Card>
-      <Card class="item">
-        <div>
-          <img src="team_header/NISAL.png"
-            @click="openUrl('https://github.com/hiNISAL')">
-          <b>NISAL</b>
-        </div>
-      </Card>
-      <br>
-    </Card>
 
     <Modal v-model="hasUpdate"
       :title="$t('update.checkNew')">
@@ -148,21 +73,21 @@ export default {
     },
     onRouteChange() {
       if (this.$route.query.checkUpdate) {
-        this.checkUpdate(this.$route.query.versionInfo)
+        // this.checkUpdate(this.$route.query.versionInfo)
       }
     },
     checkUpdate(versionInfoQuery) {
       if (versionInfoQuery) {
         const versionInfo = JSON.parse(versionInfoQuery)
         if (versionInfo.version > this.$config.version) {
-          this.hasUpdate = true
+          // this.hasUpdate = true
           this.versionInfo = versionInfo
         }
       } else {
         this.$http.get(this.$config.adminServer + 'version/checkUpdate').then(result => {
           const versionInfo = result.data
           if (versionInfo && versionInfo.version > this.$config.version) {
-            this.hasUpdate = true
+            // this.hasUpdate = true
             this.versionInfo = versionInfo
           } else {
             this.$Message.warning(this.$t('about.project.noNewVersion'))
