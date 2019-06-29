@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.pdown.gui</groupId>
     <artifactId>parent</artifactId>
-    <version>3.0</version>
+    <version>3.4</version>
   </parent>
 
   <groupId>org.pdown.gui</groupId>
@@ -23,7 +23,7 @@
   </repositories>
 
   <build>
-    <finalName>proxyee-down-runner</finalName>
+    <finalName>proxy-down-runner</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>

@@ -3,7 +3,8 @@ export default {
     tasks: '任務管理',
     extension: '擴充管理',
     setting: '軟體設定',
-    support: '编译时间'
+    about: '關於專案',
+    support: '支持我們'
   },
   tip: {
     tip: '提示',
@@ -56,8 +57,7 @@ export default {
   },
   extension: {
     conditions: '使用須知',
-    conditionsContent:
-      '首次使用擴充模組時，必須安裝由 Proxyee Down 隨機產生的一個 CA 憑證，點選下方的安裝按鈕並依系統的引導進行確認安裝。(注意：程式會在安裝前偵測作業系統中是否有安裝過憑證，當偵測到有安裝的情況會提示刪除對應的舊 CA 憑證)',
+    conditionsContent: '首次使用擴充模組時，必須安裝由 Proxy Down 隨機產生的一個 CA 憑證，點選下方的安裝按鈕並依系統的引導進行確認安裝。(注意：程式會在安裝前偵測作業系統中是否有安裝過憑證，當偵測到有安裝的情況會提示刪除對應的舊 CA 憑證)',
     install: '安裝',
     globalProxy: '全域代理',
     proxyTip: '點選檢視說明',
@@ -119,7 +119,7 @@ export default {
   about: {
     project: {
       title: '項目',
-      content: 'Proxyee Down 是一款開源的免費軟體，基於本軟體的高速下載核心和擴充套件，可以方便並快速的下載所需資源。',
+      content: 'Proxy Down 是一款開源的免費軟體，基於本軟體的高速下載核心和擴充套件，可以方便並快速的下載所需資源。',
       githubAddress: '項目首頁：',
       official: '官方網站：',
       community: '官方社區：',

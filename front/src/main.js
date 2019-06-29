@@ -12,7 +12,9 @@ import en_US from 'iview/dist/locale/en-US'
 import zh_CN from 'iview/dist/locale/zh-CN'
 import zh_TW from 'iview/dist/locale/zh-TW'
 import http from './common/http'
-import { getInitConfig } from './common/native'
+import {
+  getInitConfig
+} from './common/native'
 
 Vue.use(VueI18n)
 Vue.use(iView)
@@ -61,7 +63,7 @@ Vue.prototype.$http.interceptors.response.use(
 
 //去除字节大小格式化后的i字符
 const format = numeral.prototype.constructor.fn.format
-numeral.prototype.constructor.fn.format = function(fmt) {
+numeral.prototype.constructor.fn.format = function (fmt) {
   let result = format.call(this, fmt)
   if (/^.*ib$/.test(fmt)) {
     result = result.replace('i', '')
@@ -70,7 +72,7 @@ numeral.prototype.constructor.fn.format = function(fmt) {
 }
 Vue.prototype.$numeral = numeral
 
-Date.prototype.format = function(fmt) {
+Date.prototype.format = function (fmt) {
   var o = {
     'M+': this.getMonth() + 1, // Month
     'd+': this.getDate(), // Day
@@ -91,21 +93,21 @@ Date.prototype.format = function(fmt) {
   return fmt
 }
 
-Promise.prototype.finally = function(callback) {
+Promise.prototype.finally = function (callback) {
   let P = this.constructor
   return this.then(
     value => P.resolve(callback()).then(() => value),
     reason =>
-      P.resolve(callback()).then(() => {
-        throw reason
-      })
+    P.resolve(callback()).then(() => {
+      throw reason
+    })
   )
 }
 
 // Change the page according to the routing changes title
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
-    document.title = `Proxyee Down-${to.meta.title}`
+    document.title = `高速下载器3.4-${to.meta.title}`
   }
   next()
 })
@@ -127,7 +129,13 @@ getInitConfig()
       i18n,
       data() {
         return {
-          badges: { tasks: 0, extension: 0, setting: 0, about: 0, support: 0 }
+          badges: {
+            tasks: 0,
+            extension: 0,
+            setting: 0,
+            about: 0,
+            support: 0
+          }
         }
       },
       render: h => h(App)

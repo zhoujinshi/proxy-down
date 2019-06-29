@@ -6,7 +6,7 @@
 
     <groupId>org.pdown</groupId>
     <artifactId>core</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <name>pdown-core</name>
     <description>HTTP high speed downloader</description>
@@ -22,7 +22,6 @@
     <developers>
         <developer>
             <name>zhoujinshi</name>
-            <email>liwei2633@163.com</email>
         </developer>
     </developers>
 

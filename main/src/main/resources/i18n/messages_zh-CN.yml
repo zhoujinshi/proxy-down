@@ -10,4 +10,6 @@ gui:
   tray:
     show: 显示
     set: 设置
+    about: 关于
+    support: 打赏
     exit: 退出

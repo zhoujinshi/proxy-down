@@ -6,7 +6,7 @@
 
     <groupId>org.pdown</groupId>
     <artifactId>rest</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

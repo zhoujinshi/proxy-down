@@ -1,6 +1,6 @@
 {
-  "name": "proxyee-down",
-  "version": "3.0.0",
+  "name": "proxy-down",
+  "version": "3.4.0",
   "private": true,
   "scripts": {
     "start": "npm run serve",

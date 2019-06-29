@@ -225,7 +225,7 @@ public class DownApplication extends Application {
       Image trayImage = Toolkit.getDefaultToolkit().getImage(url);
       Dimension trayIconSize = systemTray.getTrayIconSize();
       trayImage = trayImage.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH);
-      trayIcon = new TrayIcon(trayImage, "高速下载器");
+      trayIcon = new TrayIcon(trayImage, "高速下载器3.4");
       systemTray.add(trayIcon);
       loadPopupMenu();
       //双击事件监听
@@ -240,6 +240,10 @@ public class DownApplication extends Application {
     showItem.addActionListener(event -> Platform.runLater(() -> loadUri("", true)));
     MenuItem setItem = new MenuItem(I18nUtil.getMessage("gui.tray.set"));
     setItem.addActionListener(event -> loadUri("/#/setting", true));
+    MenuItem aboutItem = new MenuItem(I18nUtil.getMessage("gui.tray.about"));
+    aboutItem.addActionListener(event -> loadUri("/#/about", true));
+    MenuItem supportItem = new MenuItem(I18nUtil.getMessage("gui.tray.support"));
+    supportItem.addActionListener(event -> loadUri("/#/support", true));
     MenuItem closeItem = new MenuItem(I18nUtil.getMessage("gui.tray.exit"));
     closeItem.addActionListener(event -> {
       Platform.exit();
@@ -248,6 +252,8 @@ public class DownApplication extends Application {
     popupMenu.add(showItem);
     popupMenu.addSeparator();
     popupMenu.add(setItem);
+    popupMenu.add(aboutItem);
+    popupMenu.add(supportItem);
     popupMenu.addSeparator();
     popupMenu.add(closeItem);
     trayIcon.setPopupMenu(popupMenu);
@@ -269,7 +275,7 @@ public class DownApplication extends Application {
 
   //加载gui窗口
   private void initWindow() {
-    stage.setTitle("高速下载器");
+    stage.setTitle("高速下载器3.4");
     Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
     int width = 1024;
     int height = 576;

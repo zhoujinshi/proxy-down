@@ -30,7 +30,7 @@ import org.springframework.util.StringUtils;
 
 public class AppUtil {
 
-  public static final String SUBJECT = "ProxyeeDown CA";
+  public static final String SUBJECT = "Cnbbx CA";
   public static final String SSL_PATH = PathUtil.ROOT_PATH + File.separator + "ssl" + File.separator;
   public static final String CERT_PATH = SSL_PATH + "ca.crt";
   public static final String PRIVATE_PATH = SSL_PATH + ".ca_pri.der";

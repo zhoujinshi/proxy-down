@@ -3,7 +3,8 @@ export default {
     tasks: '任务管理',
     extension: '扩展管理',
     setting: '软件设置',
-    support: '编译时间'
+    about: '关于项目',
+    support: '支持我们'
   },
   tip: {
     tip: '提示',
@@ -56,8 +57,7 @@ export default {
   },
   extension: {
     conditions: '使用须知',
-    conditionsContent:
-      '首次使用扩展模块时，必须安装由Proxyee Down随机生成的一个CA证书，点击下面的安装按钮并按系统的引导进行确认安装。(注意：程序会在安装前检测操作系统中是否有安装过证书，当检测到有安装的情况会提示删除对应的旧CA证书)',
+    conditionsContent: '首次使用扩展模块时，必须安装由Proxy Down随机生成的一个CA证书，点击下面的安装按钮并按系统的引导进行确认安装。(注意：程序会在安装前检测操作系统中是否有安装过证书，当检测到有安装的情况会提示删除对应的旧CA证书)',
     install: '安装',
     globalProxy: '全局代理',
     proxyTip: '点击查看说明',
@@ -119,7 +119,7 @@ export default {
   about: {
     project: {
       title: '项目',
-      content: 'Proxyee Down是一款开源的免费软件，基于本软件的高速下载内核和扩展，可以方便并快速的下载所需资源。',
+      content: 'Proxy Down是一款开源的免费软件，基于本软件的高速下载内核和扩展，可以方便并快速的下载所需资源。',
       githubAddress: '项目主页：',
       official: '官方网站：',
       community: '官方社区：',
